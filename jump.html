@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        .jp{ position: absolute; visibility: hidden; top: 100px; left: 100px;}
+    </style>
+</head>
+<body>
+    <button class="jump">jump</button>
+    <div class="jp">
+        <img src="images/jump.png" />
+    </div>
+<script>
+    var topValue;
+    function $(ele, v){
+        if(!ele){
+            throw('ele is not defined');
+        }
+        if(v){
+                return v.querySelector(ele);
+        } else{
+            return document.querySelector(ele);
+        }
+    }
+    function addevent(ele, event, handle){
+        if(ele.addEventListener){
+            ele.addEventListener(event, handle, false);
+        } else if(ele.attachEvent){
+            ele.attachEvent('on'+event, handle);
+        } else{
+            ele['on'+event] = handle;
+        }
+    }
+    function setJump( ele, button, time, top, opacity ){
+        if(!ele){ throw('ele is not defined -selfIntro.js -function setJump'); }
+        if(!button){ throw("jump can't be happened -selfIntro.js -function setJump"); }
+        if( window.getComputedStyle(ele).position === 'static' ){
+            ele.style.position = 'relative';
+        }
+        time = time||1;
+        top = top||10;
+        opacity = opacity||0;
+        ele.style.cssText += (";opacity: 1; visibility: hidden ;transition: top "+ time +"s" + ",opacity "+ time +"s;");
+        topValue = window.getComputedStyle(ele, '').top;
+        addevent(button, 'click', function(){
+            jump(ele, top, opacity);
+        })
+    }
+    function jump(ele, top, opacity){
+        if(!ele){ throw('ele is not defined -selfIntro.js -function jump'); }
+        top = top||10;
+        opacity = opacity||0;
+        ele.style.cssText += (";visibility: visible;");
+        ele.style.cssText += (";top: "+ top + "px; opacity: "+ opacity + ";");
+        setTimeout(function(){
+            ele.style.cssText += (";visibility: hidden; opacity: 1;top: "+topValue+";");
+        },1000);
+    }
+    setJump($('.jp'), $('.jump'), 1, 150, 0);
+</script>
+</body>
+</html>
