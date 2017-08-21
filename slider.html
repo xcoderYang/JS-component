@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        *{
+            padding:0;
+            margin:0;
+        }
+        button, img{
+            vertical-align: middle;
+        }
+        [class^=slider]{
+            text-align:center;
+        }
+        .slider{
+            position: relative;
+            height: 500px;
+            width: 100%;
+        }
+        .slider-content{
+            position:relative;
+            width:100%;
+            margin-top:200px;
+            text-align:center;
+        }
+
+        [class^=slider-box]{
+            width:100%;
+            height:500px;
+            position:absolute;
+            overflow:hidden;
+        }
+
+        .slider-box1{
+            background-color:rgb(0, 155, 253);
+        }
+
+        .slider-box2{
+            background-color:rgb(231, 233, 232);
+        }
+
+        .slider-box3:before{
+            content:"";
+            display:block;
+            position:absolute;
+            height:500px;
+            width:385px;
+            background-color:rgb(249, 199, 004);
+        }
+
+        .slider-box3:after{
+            content:"";
+            display:block;
+            position:absolute;
+            height:500px;
+            width:410px;
+            left:50%;
+            margin-left:550px;
+            background-color:rgb(250, 218, 095);
+        }
+
+        .slider-1, .slider-2, .slider-3{
+            height:500px;
+            width:100%;
+            transform:translateX(20%);
+            position:absolute;
+            display:block;
+            background-repeat:no-repeat;
+        }
+
+        .slider-1{
+            background-image:url('images/slide-6.webp');
+        }
+
+        .slider-2{
+            background-image:url('images/slide-7.jpg');
+        }
+
+        .slider-3{
+            background-image:url('images/slide-8.jpg');
+        }
+        .slide-pre{
+            display: inline;
+            position: relative;
+            background-color: white;
+            outline: none;
+            width:50px;
+            height: 50px;
+            z-index:100;
+            top: 50%;
+            left: 15%;
+            border-radius: 50%;
+            border: 0;
+            transform: translateY(-50%) rotate(180deg);
+        }
+        .slide-pre:before{
+            content: '';
+            display: inline-block;
+            position: relative;
+            width: 3px;
+            height: 41%;
+            top: 12px;
+            left: 13px;
+            transform: rotate(30deg);
+            transform-origin: 100% 0;
+            transition: background 0.3s, transform 0.3s;
+            background-color: black;
+        }
+        .slide-pre:after{
+            content: '';
+            display: inline-block;
+            position: relative;
+            width: 3px;
+            height: 40%;
+            top: -8px;
+            left: 6px;
+            transform: rotate(-30deg);
+            transform-origin: 0 100%;
+            transition: background 0.3s, transform 0.3s;
+            background-color: black;
+        }
+        .slide-next{
+            display: inline;
+            position: relative;
+            background-color: white;
+            outline: none;
+            width: 50px;
+            height: 50px;
+            z-index:100;
+            top: 50%;
+            right: -80%;
+            border-radius: 50%;
+            border: 0;
+            transform: translateY(-50%) rotate(180deg);
+        }
+        .slide-next:before{
+            content: '';
+            display: inline-block;
+            position: relative;
+            width: 3px;
+            height: 40%;
+            top: 10px;
+            left: -7px;
+            transform: rotate(-30deg);
+            transform-origin: 100% 0;
+            transition: background 0.3s, transform 0.3s;
+            background-color: black;
+        }
+        .slide-next:after{
+            content: '';
+            display: inline-block;
+            position: relative;
+            width: 3px;
+            height: 40%;
+            top: -9px;
+            left: -13px;
+            transform: rotate(30deg);
+            transform-origin: 0 100%;
+            transition: background 0.3s, transform 0.3s;
+            background-color: black;
+        }
+        .slider-nav{
+            z-index: 100;
+            position: absolute;
+            display: inline-block;
+            height: 500px;
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .slider-innerNav{
+            position: relative;
+            display: inline-block;
+            text-align: justify;
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="slider">
+    <div class="slider-content">
+        <div class="slider-box1">
+            <div class="slider-1">
+            </div>
+        </div>
+        <div class="slider-box2">
+            <div class="slider-2">
+            </div>
+        </div>
+        <div class="slider-box3" slider-show>
+            <div class="slider-3">
+            </div>
+        </div>
+    </div>
+    <div class="slider-nav">
+        <div class="slider-innerNav">
+            <button class="slide-pre">
+            </button>
+            <button class="slide-next">
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    window.onload = function(){
+        var Yxc = function(){
+            var topValue;
+            if(!(this instanceof Yxc)){  // new 检查
+                return new Yxc();
+            }
+        };
+        Yxc.prototype.addevent = function(ele, event, handle){
+            if(ele.addEventListener){
+                ele.addEventListener(event, handle, false);
+            }else if(ele.attachEvent){
+                ele.attachEvent('on' + event, handle);
+            }else{
+                ele['on' + event] = handle;
+            }
+        };
+        Yxc.prototype.$ = function(ele, v){
+            if(!ele){
+                throw('ele is not defined');
+            }
+            if(v){
+                return v.querySelector(ele);
+            }else{
+                return document.querySelector(ele);
+            }
+        };
+
+        var slide = function(){
+            this.setImg = undefined;
+            this.length = undefined;
+            this.currentImg = undefined;
+            this.preImg = undefined;
+            this.nextImg = undefined;
+            this.sliderContent = template.$('.slider-content');
+            var sliderContent = template.$('.slider-content');
+            var arr = [];
+            for(var i = 0; i < sliderContent.children.length; i++){
+                arr.push(sliderContent.children[i]);
+                if(sliderContent.children[i].getAttribute('slider-show') === null){
+                    sliderContent.children[i].style.visibility = 'hidden';
+                    sliderContent.children[i].style.zIndex = 0;
+                    sliderContent.children[i].style.opacity = 0;
+                }
+                else{
+                    sliderContent.children[i].style.visibility = 'visible';
+                    sliderContent.children[i].style.zIndex = 1;
+                    sliderContent.children[i].style.opacity = 1;
+                }
+            }
+            this.init(arr);
+        };
+        slide.prototype.init = function(arrImg){
+            if(!arrImg || arrImg.length === 0){
+                throw('slide init error');
+            }
+            this.setImg = arrImg;
+            this.length = this.setImg.length;
+            this.currentImg = this.setImg[0];
+            this.preImg = this.setImg[this.length - 1];
+            if(this.length === 1)
+                this.nextImg = this.setImg[0];
+            else{
+                this.nextImg = this.setImg[1];
+            }
+        };
+        slide.prototype.render = function(current, next){
+            /* 初始化状态 */
+            current.style.zIndex = 1;
+            current.style.opacity = 1;
+            current.style.visibility = 'visible';
+            next.style.zIndex = 0;
+            next.style.opactiy = 0;
+            next.style.visibility = 'hidden';
+            /* 轮播开始 */
+            current.style.transition = 'opacity 1s, z-index 2s, visibility 2s';
+            next.style.transition = 'opacity 1s, z-index 2s, visibility 2s';
+            this.currentImg = next;
+            this.preImg = next.previousElementSibling || this.setImg[this.length - 1];
+            this.nextImg = next.nextElementSibling || this.setImg[0];
+            next.style.opacity = 1;
+            next.style.zIndex = 1;
+            next.style.visibility = 'visible';
+            current.style.opacity = 0;
+            current.style.zIndex = 0;
+            current.style.visibility = 'hidden';
+        };
+        slide.prototype.render2 = function(current, next, direction){
+            current.style.transition = 'left 1s, right 1s';
+            var width = current.getBoundingClientRect().width;
+            current.style.left = '0';
+            if(direction === 'next'){
+                /*     setTimeout(function(){
+                 current.style.left = (-width+'px');
+                 }, 1000)*/
+            }
+        };
+        slide.prototype.dataSet = function(act){
+            var currentNode = template.$('.slider-content div[slider-show]');
+            var preNode = currentNode.previousElementSibling || this.setImg[this.length - 1];
+            var nextNode = currentNode.nextElementSibling || this.setImg[0];
+            act = act || 'next';
+            if(!(act === 'pre' || act === 'next')){
+                throw('dataSet argument is illegal');
+            }
+            if(act === 'pre'){
+                this.render(currentNode, preNode, act);
+                currentNode.removeAttribute('slider-show');
+                preNode.setAttribute('slider-show', '');
+            }else if(act === 'next'){
+                this.render(currentNode, nextNode, act);
+                currentNode.removeAttribute('slider-show');
+                nextNode.setAttribute('slider-show', '');
+            }
+        };
+        var template = new Yxc();
+        var temp = new slide();
+        template.addevent(template.$('.slide-pre'), 'click', function(){
+            clearInterval(handle);
+            temp.dataSet('pre');
+            handle = setInterval(function(){
+                temp.dataSet();
+            }, 5000);
+        });
+        template.addevent(template.$('.slide-next'), 'click', function(){
+            clearInterval(handle);
+            temp.dataSet('next');
+            handle = setInterval(function(){
+                temp.dataSet();
+            }, 5000);
+        });
+        template.addevent(template.$('.slide-pre'), 'mouseover', function(){
+            document.styleSheets[0].addRule('.slide-pre:after', 'transform: rotate(-45deg); background-color: red;');
+            document.styleSheets[0].addRule('.slide-pre:before', 'transform: rotate(45deg); background-color: red');
+        });
+        template.addevent(template.$('.slide-pre'), 'mouseout', function(){
+            document.styleSheets[0].addRule('.slide-pre:after', 'transform: rotate(-30deg); background-color: black;');
+            document.styleSheets[0].addRule('.slide-pre:before', 'transform: rotate(30deg); background-color: black');
+        });
+        template.addevent(template.$('.slide-next'), 'mouseover', function(){
+            document.styleSheets[0].addRule('.slide-next:after', 'transform: rotate(45deg); background-color: red;');
+            document.styleSheets[0].addRule('.slide-next:before', 'transform: rotate(-45deg); background-color: red');
+        });
+        template.addevent(template.$('.slide-next'), 'mouseout', function(){
+            document.styleSheets[0].addRule('.slide-next:after', 'transform: rotate(30deg); background-color: black;');
+            document.styleSheets[0].addRule('.slide-next:before', 'transform: rotate(-30deg); background-color: black;');
+        });
+
+        var handle = setInterval(function(){
+            temp.dataSet();
+        }, 5000);
+        //temp.dataSet();
+        console.log(document.styleSheets);
+    }
+</script>
+</body>
+</html>

@@ -12,18 +12,13 @@
         <img src="images/jump.png" />
     </div>
 <script>
-    var topValue;
-    function $(ele, v){
-        if(!ele){
-            throw('ele is not defined');
+    var Yxc = function(){
+        var topValue;
+        if( !(this instanceof Yxc) ){  // new 检查
+            return new Yxc();
         }
-        if(v){
-                return v.querySelector(ele);
-        } else{
-            return document.querySelector(ele);
-        }
-    }
-    function addevent(ele, event, handle){
+    };
+    Yxc.prototype.addevent = function(ele, event, handle){
         if(ele.addEventListener){
             ele.addEventListener(event, handle, false);
         } else if(ele.attachEvent){
@@ -31,8 +26,20 @@
         } else{
             ele['on'+event] = handle;
         }
-    }
-    function setJump( ele, button, time, top, opacity ){
+    };
+    Yxc.prototype.$ = function(ele, v){
+        if(!ele){
+            throw('ele is not defined');
+        }
+        if(v){
+            return v.querySelector(ele);
+        } else{
+            return document.querySelector(ele);
+        }
+    };
+    var jump = new Yxc();
+    jump.setJump = function( ele, button, time, top, opacity ){
+        var self = this;
         if(!ele){ throw('ele is not defined -selfIntro.js -function setJump'); }
         if(!button){ throw("jump can't be happened -selfIntro.js -function setJump"); }
         if( window.getComputedStyle(ele).position === 'static' ){
@@ -42,22 +49,25 @@
         top = top||10;
         opacity = opacity||0;
         ele.style.cssText += (";opacity: 1; visibility: hidden ;transition: top "+ time +"s" + ",opacity "+ time +"s;");
-        topValue = window.getComputedStyle(ele, '').top;
-        addevent(button, 'click', function(){
-            jump(ele, top, opacity);
+        this.topValue = window.getComputedStyle(ele, '').top;
+        this.addevent(button, 'click', function(){
+
+            self.jump(ele, top, opacity);
         })
-    }
-    function jump(ele, top, opacity){
+    };
+    jump.jump = function(ele, top, opacity){
+        var self = this;
         if(!ele){ throw('ele is not defined -selfIntro.js -function jump'); }
         top = top||10;
         opacity = opacity||0;
         ele.style.cssText += (";visibility: visible;");
         ele.style.cssText += (";top: "+ top + "px; opacity: "+ opacity + ";");
         setTimeout(function(){
-            ele.style.cssText += (";visibility: hidden; opacity: 1;top: "+topValue+";");
+            ele.style.cssText += (";visibility: hidden; opacity: 1;top: "+self.topValue+";");
         },1000);
-    }
-    setJump($('.jp'), $('.jump'), 1, 150, 0);
+    };
+
+    jump.setJump(jump.$('.jp'), jump.$('.jump'), 1, 50, 0);
 </script>
 </body>
 </html>
