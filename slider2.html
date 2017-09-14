@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        *{ margin:0; padding:0; }
+        img{ max-width:100%; vertical-align:middle; }
+        span{ display:inline-block; }
+        .slider{ position:relative; margin:100px auto; height:auto; width:500px; overflow:hidden; font-size:0; white-space:nowrap; }
+        .slider span{ position:relative; }
+        span[class^='slider-']{ left:-500px; width:500px; transition:left .3s; z-index:1000; }
+    </style>
+</head>
+<body>
+<div class="slider">
+    <span class="slider-1"><img src="images/slide-1.jpg" alt="1"></span>
+    <span class="slider-2"><img src="images/slide-2.jpg" alt="2"></span>
+    <span class="slider-3"><img src="images/slide-3.jpg" alt="3"></span>
+    <span class="slider-4"><img src="images/slide-4.jpg" alt="4"></span>
+    <span class="slider-5"><img src="images/slide-5.jpg" alt="5"></span>
+</div>
+<button onclick="slide.next();">next</button>
+<button onclick="slide.pre();">pre</button>
+<script>
+    var slide = {
+        el: undefined,
+        index: undefined,
+        nextIndex: undefined,
+        preIndex: undefined,
+        len: undefined,
+        left: undefined,
+        current: undefined,
+        curIndex: 0,
+        width: undefined,
+        handle: undefined,
+        source: ['images/slide-1.jpg', 'images/slide-2.jpg', 'images/slide-3.jpg', 'images/slide-4.jpg', 'images/slide-5.jpg'],
+        init: function(ele){
+            if(!ele || (this.source.length === 0)){
+                throw('初始化绑定错误!');
+            }
+            this.el = ele;
+            this.len = this.source.length;
+            this.current = this.el.children[this.curIndex];
+            this.preIndex = this.current;
+            this.left = -500;
+            this.width = 500;
+            var elePre = document.createElement('span'),
+                elePreImg = document.createElement('img'),
+                eleLast = document.createElement('span'),
+                eleLastImg = document.createElement('img'),
+                eleLast2 = document.createElement('span'),
+                eleLast2Img = document.createElement('img');
+            elePre.className = 'slider-0';
+            elePreImg.src = this.source[this.len - 1];
+            eleLast.className = 'slider-' + (this.len + 1);
+            eleLastImg.src = this.source[0];
+            eleLast2.className = 'slider-' + (this.len + 2);
+            eleLast2Img.src = this.source[1];
+            elePre.appendChild(elePreImg);
+            eleLast.appendChild(eleLastImg);
+            eleLast2.appendChild(eleLast2Img);
+            this.el.insertBefore(elePre, this.preIndex);
+            this.el.appendChild(eleLast);
+            this.el.appendChild(eleLast2);
+            this.len = this.source.length;
+            this.curIndex = 1;
+            this.current = this.el.children[this.curIndex];
+            this.preIndex = this.current;
+            this.index = this.el.children[1 % this.len];
+            this.nextIndex = this.el.children[2 % this.len];
+            this.handle = setInterval(function(){
+                slide.next();
+            }, 1000);
+            for( var i = 1; i<=this.len; i++ ){
+                addevent(this.el.children[i], 'mouseover', function(){
+                    clearInterval(slide.handle);
+                });
+                addevent(this.el.children[i], 'mouseout', function(){
+                    slide.handle = setInterval(function(){
+                        slide.next();
+                    }, 1000);
+                });
+            }
+        },
+        next: function(){
+            var ele = $$('span[class^="slider-"]');
+            var len = ele.length;
+            if(this.current === $('.slider-' + this.len)){
+                for(var i = 0; i < len; i++){
+                    ele[i].style.transition = 'none';
+                    ele[i].style.left = '0px';
+                }
+                this.left = 0;
+                setTimeout(function(){
+                    for(var i = 0; i < len; i++){
+                        ele[i].style.transition = 'left .3s';
+                    }
+                    for(var i = 0; i < len; i++){
+                        ele[i].style.left = slide.left - slide.width + 'px';
+                    }
+                    slide.left = slide.left - slide.width;
+                    slide.curIndex = slide.curIndex + 1;
+                    slide.current = slide.el.children[slide.curIndex];
+                }, 0);
+                this.curIndex = 0;
+                this.current = this.el.children[this.curIndex];
+                return;
+            }
+            for(var i = 0; i < len; i++){
+                ele[i].style.left = this.left - slide.width + 'px';
+            }
+            this.left = this.left - slide.width;
+            this.curIndex = this.curIndex + 1;
+            this.current = this.el.children[this.curIndex];
+        },
+        pre: function(){
+
+            var ele = $$('span[class^="slider-"]');
+            var len = ele.length;
+
+            if(this.current === $('.slider-0')){
+                for(var i = 0; i < len; i++){
+                    ele[i].style.transition = 'none';
+                    ele[i].style.left = '-' + this.len * this.width + 'px';
+                }
+                this.left = -this.len * this.width;
+                setTimeout(function(){
+                    for(var i = 0; i < len; i++){
+                        ele[i].style.transition = 'left .3s';
+                    }
+                    for(var i = 0; i < len; i++){
+                        ele[i].style.left = slide.left + slide.width + 'px';
+                    }
+                    slide.left = slide.left + slide.width;
+                    slide.curIndex = slide.curIndex - 1;
+                    slide.current = slide.el.children[slide.curIndex];
+                }, 0);
+                this.curIndex = this.len;
+                this.current = this.el.children[this.curIndex];
+                return;
+            }
+
+            for(var i = 0; i < len; i++){
+                ele[i].style.left = this.left + this.width + 'px';
+            }
+            this.left = this.left + this.width;
+            this.curIndex = this.curIndex - 1;
+            this.current = this.el.children[this.curIndex];
+
+        }
+    };
+    function $(ele){
+        return document.querySelector(ele);//IE8只支持少部分的CSS3选择器，所以对IE8下的CSS3选择要慎重。以及HTML5标签
+    }
+    function $$(ele){
+        return document.querySelectorAll(ele);
+    }
+    function addevent(ele, handle, fn){
+        if(ele.addEventListener){
+            ele.addEventListener(handle, fn, false);
+        }else if(ele.attachEvent){
+            ele.attachEvent('on' + handle, fn);
+        }
+    }
+    slide.init($('.slider'));
+    function getWidth(ele){
+        var width = 0;
+        for(var i = 0; i < ele.children.length; i++){
+            width += +window.getComputedStyle(ele.children[i]).width.slice(0, -2);
+        }
+        return width;
+    }
+</script>
+</body>
+</html>
